@@ -1,0 +1,15 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    //pyrcc5 -o (file).py (file).qrc
+    <file>images/Stage 0.png</file>
+    <file>images/Stage 1.png</file>
+    <file>images/Stage 2.png</file>
+    <file>images/Stage 3.png</file>
+    <file>images/Stage 4.png</file>
+    <file>images/Stage 5.png</file>
+    <file>images/Stage 6.png</file>
+    <file>images/Stage 7.png</file>
+    <file>csv/englishwords.csv</file>
+</qresource>
+</RCC>
+

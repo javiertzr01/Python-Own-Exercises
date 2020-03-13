@@ -39,7 +39,7 @@ def CheckWinCondition(word):
         print('Congratulations, You Win~')
         return True
 
-file = pd.read_csv('C:\Users\Javier\Desktop\Python\Python-Own-Exercises\Own Exercises\englishwords.csv', sep = ';', skiprows=3)
+file = pd.read_csv(r'C:\Users\Javier\Desktop\Python\Python-Own-Exercises\Own Exercises\englishwords.csv', sep = ';', skiprows=3)
 file = file.dropna(thresh=2)
 words = file['word']
 index = random.randint(0, len(words) - 1)

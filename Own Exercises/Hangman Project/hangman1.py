@@ -17,6 +17,9 @@ import random
 import io
 
 class Ui_MainWindow(object):
+    Exit_Code = -123
+    
+    
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1920, 1080)
@@ -46,9 +49,23 @@ class Ui_MainWindow(object):
         self.drawing.setAlignment(QtCore.Qt.AlignCenter)
         self.drawing.setObjectName("drawing")
         
-        self.guessedbox = QtWidgets.QListView(self.centralwidget)
-        self.guessedbox.setGeometry(QtCore.QRect(1490, 660, 421, 371))
+        self.guessedbox = QtWidgets.QListWidget(self.centralwidget)
+        self.guessedbox.setGeometry(QtCore.QRect(1420, 660, 491, 371))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.guessedbox.setFont(font)
         self.guessedbox.setObjectName("guessedbox")
+        
+        self.wrongentrieslabel = QtWidgets.QLabel(self.centralwidget)
+        self.wrongentrieslabel.setGeometry(QtCore.QRect(1420, 590, 491, 61))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.wrongentrieslabel.setFont(font)
+        self.wrongentrieslabel.setTextFormat(QtCore.Qt.AutoText)
+        self.wrongentrieslabel.setScaledContents(False)
+        self.wrongentrieslabel.setAlignment(QtCore.Qt.AlignBottom)
+        self.wrongentrieslabel.setWordWrap(True)
+        self.wrongentrieslabel.setObjectName("wrongentrieslabel")
         
         self.inputbox = QtWidgets.QLineEdit(self.centralwidget)
         self.inputbox.setGeometry(QtCore.QRect(210, 910, 661, 71))
@@ -57,6 +74,7 @@ class Ui_MainWindow(object):
         self.inputbox.setFont(font)
         self.inputbox.setText("")
         self.inputbox.setObjectName("inputbox")
+        self.inputbox.setFocus(QtCore.Qt.MouseFocusReason)
         
         self.submitButton = QtWidgets.QPushButton(self.centralwidget)
         self.submitButton.setGeometry(QtCore.QRect(970, 910, 231, 71))
@@ -65,6 +83,10 @@ class Ui_MainWindow(object):
         self.submitButton.setFont(font)
         self.submitButton.setObjectName("submitButton")
         self.submitButton.clicked.connect(self.SubmitButtonClicked)
+        # self.submitButton.setShortcut(QtGui.QKeySequence("Return")) Use at the main part of code, not here.
+        
+        self.submit_button_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence("Return"), self.submitButton)
+        self.submit_button_shortcut.activated.connect(self.SubmitButtonClicked)
         
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -113,6 +135,7 @@ class Ui_MainWindow(object):
             self.mistakes += 1
             self.drawing.setPixmap(QtGui.QPixmap(":/images/Stage " + str(self.mistakes) + ".png"))
             self.display(self.HM_word, self.guessed_letters)
+            self.Update_List(letter)
             self.CheckWinCondition()
             
     def word_guess(self, random_word):
@@ -126,32 +149,74 @@ class Ui_MainWindow(object):
             self.mistakes += 1
             self.drawing.setPixmap(QtGui.QPixmap(":/images/Stage " + str(self.mistakes) + ".png"))
             self.display(self.HM_word, self.guessed_letters)
+            self.Update_List(random_word)
             self.CheckWinCondition()
             
     
     def SubmitButtonClicked(self):
-        ########include if statement for number of letters######## DONE
         self.letter = self.inputbox.text()
         self.inputbox.clear()
         if len(self.letter) != 1 and len(self.letter) != len(self.HM_word):
-            print("try again")
-            ##pop up to try again##
+            self.popup_wrongindex()
             return
         
         if len(self.letter) == len(self.HM_word):
             for a in self.guessed_words:
                 if a == self.guessed_words:
-                    print('The word you guessed has already been guessed, please guess another word or letter')
+                    self.popup_guessedwords()
                     return
             self.word_guess(self.letter)
         
         else:
             for x in self.guessed_letters:
                 if x == self.letter:
-                    ######### label statement to replace ##########
-                    print('The letter you guessed has already been guessed, please guess another letter or word')
+                    self.popup_guessedletters()
                     return
             self.letter_guess(self.HM_word, self.letter)
+        self.inputbox.setFocus(QtCore.Qt.MouseFocusReason)
+            
+    def popup_win(self):
+        win_message = QtWidgets.QMessageBox()
+        win_message.setWindowTitle("YOU WIN!")
+        win_message.setText("Congratulations, You Win!")
+        win_message.setInformativeText("Would you like to restart?")
+        win_message.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        win_message.buttonClicked.connect(self.Restart)
+        win_message.exec_()
+    
+    def popup_lose(self):
+        lose_message = QtWidgets.QMessageBox()
+        lose_message.setWindowTitle("YOU LOSE!")
+        lose_message.setText("The correct word is '" + self.HM_word + "' \nTry harder next time :^)" )
+        lose_message.setInformativeText("Would you like to restart?")
+        lose_message.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        lose_message.setIcon(QtWidgets.QMessageBox.Critical)
+        lose_message.buttonClicked.connect(self.Restart)
+        lose_message.exec_()
+        
+    def popup_wrongindex(self):
+        saytryagain = QtWidgets.QMessageBox()
+        saytryagain.setWindowTitle("Oops")
+        saytryagain.setText("Please enter only 1 letter or 1 word with the correct number of letters")
+        saytryagain.setIcon(QtWidgets.QMessageBox.Warning)
+        saytryagain.exec_()
+        self.inputbox.setFocus(QtCore.Qt.MouseFocusReason)
+        
+    def popup_guessedletters(self):
+        same_letter = QtWidgets.QMessageBox()
+        same_letter.setWindowTitle("You guessed this before")
+        same_letter.setText("The letter you guessed has already been guessed, please guess another letter or word")
+        same_letter.setIcon(QtWidgets.QMessageBox.Warning)
+        same_letter.exec_()
+        self.inputbox.setFocus(QtCore.Qt.MouseFocusReason)
+    
+    def popup_guessedwords(self):
+        same_word = QtWidgets.QMessageBox()
+        same_word.setWindowTitle("You guessed this before")
+        same_word.setText("The word you guessed has already been guessed, please guess another letter or word")
+        same_word.setIcon(QtWidgets.QMessageBox.Warning)
+        same_word.exec_()
+        self.inputbox.setFocus(QtCore.Qt.MouseFocusReason)
     
     def display(self, random_word, guessed_letters):
         self.word = ''
@@ -166,34 +231,46 @@ class Ui_MainWindow(object):
         
     def CheckWinCondition(self):
         if self.mistakes >= 6:
-            print('The correct word is "' + self.HM_word + '"') ###### pop up dialog #######
-            print('Try harder next time :^)')
+            self.popup_lose()
             self.submitButton.setDisabled(True)
         
         if self.word_guessed == True:
-            print('Congratulations, You Win!')
+            self.popup_win()
             self.submitButton.setDisabled(True)
         
         for x in self.word:
             if x == "_":
                 return
         else:
-            print('Congratulations, You Win!')
+            self.popup_win()
             self.submitButton.setDisabled(True)
+            
+    def Update_List(self, guess):
+        self.guessedbox.addItem(guess)
+        
+    def Restart(self, i):
+        if i.text() == "&Yes":
+            QtWidgets.qApp.exit(Ui_MainWindow.Exit_Code)
+        elif i.text() == "&No":
+            sys.exit()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.linesletters.setText(_translate("MainWindow", "LINES AND NUMBER LETTERS"))
         self.submitButton.setText(_translate("MainWindow", "SUBMIT"))
+        self.wrongentrieslabel.setText(_translate("MainWindow", "Wrong Entries"))
 
 if __name__ == "__main__":
-    
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+    currentExitCode = Ui_MainWindow.Exit_Code
+    while currentExitCode == Ui_MainWindow.Exit_Code:
+        app = QtWidgets.QApplication(sys.argv)
+        MainWindow = QtWidgets.QMainWindow()
+        ui = Ui_MainWindow()
+        ui.setupUi(MainWindow)
+        MainWindow.show()
+        currentExitCode = app.exec_()
+        app = None
+        # sys.exit(app.exec_())
 
 
